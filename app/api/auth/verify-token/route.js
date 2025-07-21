@@ -1,0 +1,31 @@
+import jwt from 'jsonwebtoken';
+
+export async function POST(req) {
+    try {
+        const {token} = await req.json();
+        if(!token){
+            return new Response(JSON.stringify({success:false, message:"Token is required"}), {
+                status:400,
+                headers:{
+                    "Content-Type": "application/json"
+                }
+            })
+        }
+        // verify token
+        const decode = jwt.verify(token, process.env.JWT_SECRET);
+        return new Response(JSON.stringify({valid:true, message:"Token is valid",user:decode}),{
+            status:200,
+            headers:{
+                "Content-Type": "application/json"
+            }
+        })
+    } catch (error) {
+        console.log(error);
+        return new Response(JSON.stringify({success:false, message:" internal server error"}), {
+            status:500,
+            headers:{
+                "Content-Type": "application/json"
+            }
+        })
+    }
+}
