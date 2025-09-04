@@ -6,6 +6,7 @@ const mockInterview = new mongoose.Schema({
     jobPosition: { type: String, required: true },
     jobDescription: { type: String, required: true },
     jobExperience: {type: String, required: true},
+    jobProject: {type: String},
     createdBy: {type: String, ref: 'User', required:true},
     createdAt:{type: String},
     mockInterviewId: {type:String, unique: true, required: true},

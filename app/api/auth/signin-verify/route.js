@@ -11,6 +11,7 @@ export async function POST(req) {
     const {email,password} = await req.json();
     await connectDB();
     try {
+        
         // is user exists (email check)
         const isExists = await User.findOne({email});
         if(!isExists){
@@ -21,6 +22,17 @@ export async function POST(req) {
                 }
             })
         }
+
+        // check if verified or not
+        // if(!isExists.verified){
+        //     return new Response(JSON.stringify({success: false,message:"Email is not verified"}),{
+        //         status:404,
+        //         headers:{
+        //             'Content-Type':'application/json'
+        //         }
+        //     })
+        // }
+
         // check if password matches
         const isPassMatch = await bcrypt.compare(password, isExists.password);
         if(!isPassMatch){

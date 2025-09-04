@@ -73,7 +73,7 @@ const Signin = () => {
             <p className='text-3xl font-semi-bold' >Practice With Ai</p>
     
             <Input type="email" onChange={e=>setEmail(e.target.value)}  placeholder="Email" />
-            <Input type="password" onChange={e=>setPassword(e.target.value)}  placeholder="Create Password" />
+            <Input type="password" onChange={e=>setPassword(e.target.value)}  placeholder="Enter Password" />
             {isLoading ? (
               <Button size="sm" disabled>
           <Loader2Icon className="animate-spin" />

@@ -77,7 +77,7 @@ export default function Signup() {
       Please wait
     </Button>
         ): (
-          <Button onClick={sendOTP} type="submit" className='cursor-pointer' >SignUp</Button>
+          <Button onClick={sendOTP} type="submit" className='cursor-pointer ' >Create Account</Button>
         ) }
          <span>already have an account <Link href="/signin" className='hover:underline font-mono' >Login</Link> </span> 
 
