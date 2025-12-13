@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# MockMate Ai 🤖🎤
 
-## Getting Started
+**Master Your Interviews. Crack that Dream Job.**
 
-First, run the development server:
+MockMate Ai is an advanced AI-powered interview preparation platform designed to help candidates practice, refine, and perfect their interviewing skills. By leveraging Google's **Gemini AI**, we provide realistic voice-based mock interviews, real-time feedback, and ATS-optimized resume analysis.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+![Made with Love](https://img.shields.io/badge/Made%20with-💜-violet) ![Next.js](https://img.shields.io/badge/Next.js-15-black) ![Gemini AI](https://img.shields.io/badge/AI-Gemini-blue)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Features
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+- **🎙️ AI Voice Interviews**: Experience realistic, interactive interview sessions with a human-like AI interviewer.
+- **📄 Resume Doctor**: Upload your resume (PDF) and get an instant ATS score, keyword analysis, and improvement suggestions.
+- **⚡ Instant Feedback**: Receive detailed feedback on your answers immediately after the interview, including technical accuracy and communication scoring.
+- **🎯 Role-Specific Prep**: Tailored questions for Full Stack, Frontend, Backend, and other technical roles.
+- **📊 Performance Tracking**: Dashboard to view past interview scores and track your progress over time.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🛠️ Tech Stack
 
-## Learn More
+| Component | Technology |
+| :--- | :--- |
+| **Framework** | [Next.js 15](https://nextjs.org/) (App Router) |
+| **Language** | JavaScript / React 19 |
+| **Styling** | [Tailwind CSS 4](https://tailwindcss.com/) & [Radix UI](https://www.radix-ui.com/) |
+| **Database** | MongoDB & Mongoose |
+| **Authentication** | Custom Auth / Clerk (if applicable) |
+| **AI Model** | Google Gemini 1.5 Flash |
+| **Icons** | Lucide React |
 
-To learn more about Next.js, take a look at the following resources:
+## 🏁 Getting Started
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Follow these steps to set up the project locally.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Prerequisites
 
-## Deploy on Vercel
+- **Node.js** (v18 or higher recommended)
+- **MongoDB** (Local or Atlas connection string)
+- **Google Gemini API Key**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Installation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/your-username/mockmate-ai.git
+    cd mockmate-ai
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    # or
+    yarn install
+    ```
+
+3.  **Set up Environment Variables:**
+    Create a `.env.local` file in the root directory and add the following keys:
+
+    ```env
+    NEXT_PUBLIC_GEMINI_API_KEY=your_gemini_api_key
+    MONGODB_URI=your_mongodb_connection_string
+    # Add other necessary env vars here (e.g., Clerk keys if used)
+    ```
+
+4.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
+
+5.  **Open your browser:**
+    Navigate to [http://localhost:3000](http://localhost:3000) to see the app in action.
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
