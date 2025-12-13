@@ -29,57 +29,75 @@ const AddInterview = () => {
   const [jobPosition, setJobPosition] = useState('')
   const {user} = useUser();
   const router = useRouter();
-  console.log("user is : ",user);
-  const handleSubmit =  async(e)=>{
+  // console.log("user is : ",user);
+ const handleSubmit = async (e) => {
     setIsLoading(true);
     e.preventDefault();
-    console.log( "this is console log",jobExperience, jobDescription, jobPosition, Project);
+    console.log("this is console log", jobExperience, jobDescription, jobPosition, Project);
 
- try {
-  const InputPrompt = `
-You are an AI Interviewer. Based on the following details, generate ${process.env.NEXT_PUBLIC_INTERVIEW_QUESTIONS} interview questions and answers in JSON format. Each item should have a "question" and "answer".
+    try {
+      const InputPrompt = `
+      You are an AI Interviewer. Based on the following details, generate ${process.env.NEXT_PUBLIC_INTERVIEW_QUESTIONS} interview questions and answers in JSON format. Each item should have a "question" and "answer".
 
-Details:
-- Job Role: ${jobPosition}
-- Job Description: ${jobDescription}
-- Experience: ${jobExperience} years
-- Project: ${Project || "None"}
-`
-  const result = await chatSession.sendMessage(InputPrompt);
-  const text = await result.response.text();
-  const MockResponse = await text.replace('```json','').replace('```','');
-  console.log("normal",MockResponse);
-  console.log("json ",JSON.parse(MockResponse));
-  setJsonResponse(JSON.parse(MockResponse));
-  
-  const resp = await fetch('/api/interview',{
-    method:'POST',
-    headers:{'content-type':'application/json'},
-    body:JSON.stringify({
+      Details:
+      - Job Role: ${jobPosition}
+      - Job Description: ${jobDescription}
+      - Experience: ${jobExperience} years
+      - Project: ${Project || "None"}
+      `
+      const result = await chatSession.sendMessage(InputPrompt);
+      const text = await result.response.text();
+
+      // --- FIX STARTS HERE ---
+      // Step 1: Remove markdown code blocks if present
+      const cleanedText = text.replace(/```json|```/g, '').trim(); 
       
-      jobPosition,
-      jobExperience,
-      jobDescription,
-      jsonMockResponse: MockResponse,
-      createdBy: user.email,
-      createdAt:moment().format('YYYY-MM-DD')
-    })
-  })
+      // Step 2: Find the exact start and end of the JSON array
+      const jsonStartIndex = cleanedText.indexOf('[');
+      const jsonEndIndex = cleanedText.lastIndexOf(']') + 1;
 
-  const data =await  resp.json();
-  console.log("response data ->",data);
+      // Step 3: Extract ONLY the JSON part
+      if (jsonStartIndex !== -1 && jsonEndIndex !== -1) {
+          const finalJsonString = cleanedText.substring(jsonStartIndex, jsonEndIndex);
+          
+          console.log("normal", finalJsonString);
+          const parsedJson = JSON.parse(finalJsonString);
+          console.log("json ", parsedJson);
+          setJsonResponse(parsedJson);
 
-  if(data){
-    setOpenDialogue(false);
-    toast.success("interview generated");
-    router.push(`/dashboard/interview/`+data?.mockInterviewId);
-  }
- } catch (error) {
-  toast.error("Facing problem while generating interview");
-  console.log(error);
- }finally{
-  setIsLoading(false);
- }
+          // Proceed with your API call
+          const resp = await fetch('/api/interview', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              jobPosition,
+              jobExperience,
+              jobDescription,
+              jsonMockResponse: finalJsonString, // Save the clean string
+              createdBy: user.email,
+              createdAt: moment().format('YYYY-MM-DD')
+            })
+          });
+
+          const data = await resp.json();
+          console.log("response data ->", data);
+
+          if (data) {
+            setOpenDialogue(false);
+            toast.success("Interview generated successfully!");
+            router.push(`/dashboard/interview/` + data?.mockInterviewId);
+          }
+      } else {
+        throw new Error("Valid JSON array not found in response");
+      }
+      // --- FIX ENDS HERE ---
+
+    } catch (error) {
+      toast.error("Facing problem while generating interview");
+      console.error("Error generating interview:", error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (

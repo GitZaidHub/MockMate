@@ -1,6 +1,31 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+body {
+  /* Dark base with a top spotlight */
+  background-color: #09090b;
+  background-image: radial-gradient(ellipse at top,
+      rgba(120, 119, 198, 0.15),
+      /* Light Purple Tint */
+      transparent 40%);
+  color: white;
+}
+
+.cards {
+  background-color: rgba(39, 39, 42, 0.5);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition-property: all;
+  transition-duration: 300ms;
+}
+
+.cards:hover {
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -140,6 +165,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }

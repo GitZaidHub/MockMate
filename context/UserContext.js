@@ -20,6 +20,7 @@ export function UserProvider({children}){
             .then(data => {
                 if (data.valid) {
                     setUser(data?.user);
+                    console.log("User data in context:", data?.user);
                 } else {
                     localStorage.removeItem('token');
                 }

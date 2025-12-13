@@ -20,11 +20,38 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-black bg-[url(/bg.svg)] text-white antialiased mx-4 py-1 h-full  `}
+      {/* <body
+        className={`${geistSans.variable} ${geistMono.variable} text-white antialiased mx-4 py-1 h-full  `}
       >
         {children}
-        <Toaster/>
+        <Toaster />
+      </body> */}
+      <body>
+        <div className={`${geistSans.variable} ${geistMono.variable} antialiased relative min-h-screen w-full bg-zinc-950 overflow-hidden text-white selection:bg-violet-500/30`}>
+
+          {/* 2. BACKGROUND LAYER: The Grid Pattern (The Mod) */}
+          <div className="absolute inset-0 z-0 h-full w-full bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+
+          {/* 3. BACKGROUND LAYER: The Purple Spotlight (Improved) */}
+          <div className="absolute top-0 z-0 h-[-10%] w-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]"></div>
+
+          {/* Optional: Bottom Left Secondary Glow (For 3D depth) */}
+          <div className="absolute bottom-0 left-0 z-0 h-[500px] w-[500px] bg-purple-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+
+          {/* 4. CONTENT LAYER (Iske upar sab kuch aayega) */}
+          <div className="relative z-10 flex">
+
+            {/* Tera Sidebar Yahan Aayega */}
+            {/* <Sidebar /> */}
+
+            {/* Main Content Area */}
+            <main className="flex-1 p-8">
+              {children}
+              <Toaster />
+            </main>
+
+          </div>
+        </div>
       </body>
     </html>
   );

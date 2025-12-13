@@ -3,30 +3,63 @@ import { User } from "@/model/User";
 import jwt from "jsonwebtoken";
 
 export async function POST(req) {
-    const {email , otp} = await req.json();
+  try {
+    const { email, otp } = await req.json();
+
+    if (!email || !otp) {
+      return Response.json(
+        { success: false, message: "Email and OTP are required" },
+        { status: 400 }
+      );
+    }
+
     await connectDB();
 
-    const user = await User.findOne({email});
+    const user = await User.findOne({ email });
     console.log("user", user);
-    console.log("details ->",otp, user.otp, user.otpExpired);
 
-    if (!user || user.otp !== otp || user.otpExpires < new Date()) 
-      {
-        // return Response.json({ success: false, message: "Invalid or expired OTP" });
-        return new Response(JSON.stringify({success:false, message: "Invalid or expired OTP"}));
-      }
+    // Make sure this matches your schema: otpExpired vs otpExpires
+    console.log("details ->", otp, user?.otp, user?.otpExpired);
+
+    if (!user || user.otp !== otp || user.otpExpired < new Date()) {
+      return Response.json(
+        { success: false, message: "Invalid or expired OTP" },
+        { status: 400 }
+      );
+    }
+
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET is not set");
+      return Response.json(
+        { success: false, message: "Server misconfiguration" },
+        { status: 500 }
+      );
+    }
+
     const token = jwt.sign(
-      {userId:user._id,email:user.email},
+      { userId: user._id, email: user.email },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "1d"
-      }
-    )
+      { expiresIn: "1d" }
+    );
 
     user.isVerified = true;
     user.otp = undefined;
     user.otpExpired = undefined;
     await user.save();
-    // return Response.json({success:true, message: "User verified successfully",token});
-    return new Response(JSON.stringify({success:true, message: "User verfied successfully",token}))
+
+    return Response.json(
+      {
+        success: true,
+        message: "User verified successfully",
+        token,
+      },
+      { status: 200 }
+    );
+  } catch (err) {
+    console.error("Error in verify-otp route:", err);
+    return Response.json(
+      { success: false, message: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }
