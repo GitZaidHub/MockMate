@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import PDFParser from "pdf2json";
+import pdf from "pdf-parse";
 import { analyzeResumeWithAI } from "@/utils/GeminiAiModel"; // Import the logic
 
 export async function POST(req) {
@@ -12,7 +12,14 @@ export async function POST(req) {
         }
 
         // 1. Parse PDF
-        const resumeText = await parsePdf(file);
+        const buffer = Buffer.from(await file.arrayBuffer());
+        const pdfData = await pdf(buffer);
+        const resumeText = pdfData.text;
+
+        if (!resumeText || resumeText.length < 50) {
+            console.warn("PDF Extraction Warning: Very little text found.", resumeText);
+            // Proceed anyway, let AI decide if it's readable, but log it.
+        }
 
         // 2. Get AI Analysis (Logic extracted to utility)
         const analysisResult = await analyzeResumeWithAI(resumeText);
@@ -27,33 +34,4 @@ export async function POST(req) {
             details: error.message || String(error)
         }, { status: 500 });
     }
-}
-
-// Helper: Clean PDF Parsing Wrapper
-async function parsePdf(file) {
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    return new Promise((resolve, reject) => {
-        const pdfParser = new PDFParser();
-
-        pdfParser.on("pdfParser_dataError", (errData) => {
-            reject(errData?.parserError || "Unknown PDF parse error");
-        });
-
-        pdfParser.on("pdfParser_dataReady", (pdfData) => {
-            try {
-                // Extract text from pages
-                const rawText = (pdfData?.formImage?.Pages || []).flatMap((page) =>
-                    (page.Texts || []).map((textItem) => decodeURIComponent(textItem.R[0].T))
-                ).join(" ");
-
-                resolve(rawText);
-            } catch (err) {
-                reject("Parsing failed during extraction");
-            }
-        });
-
-        pdfParser.parseBuffer(buffer);
-    });
 }

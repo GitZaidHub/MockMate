@@ -29,7 +29,7 @@ export const chatSession = model.startChat({
 export const analyzeResumeWithAI = async (resumeText) => {
   // 1. Configure model specifically for JSON response
   const jsonModel = genAI.getGenerativeModel({
-    model: "gemini-2.5-flash",
+    model: "gemini-1.5-flash",
     generationConfig: {
       responseMimeType: "application/json" // Enforces strict JSON
     }
@@ -41,9 +41,14 @@ export const analyzeResumeWithAI = async (resumeText) => {
     Analyze the following resume text for a Software Engineer role.
 
     Resume Text:
-    "${resumeText.slice(0, 10000)}" 
+    "${resumeText ? resumeText.slice(0, 20000) : "NO CONTENT FOUND"}" 
 
-    Provide a structured JSON response with the following schema:
+    Important: If the Resume Text is "NO CONTENT FOUND" or appears to be jibberish/empty, return a JSON with:
+    - ats_score: 0
+    - summary: "Error: Could not extract text from this resume. Please ensure it is a text-selectable PDF, not an image scan."
+    - veridict: "Unreadable"
+    
+    Otherwise, provide a structured JSON response with the following schema:
     {
       "ats_score": number (0-100),
       "summary": "String (Professional summary of the candidate)",
