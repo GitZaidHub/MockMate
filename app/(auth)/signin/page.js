@@ -158,7 +158,7 @@ const Signin = () => {
           {/* Footer Links */}
           <div className="mt-8 pt-6 border-t border-white/5 text-center">
             <p className="text-zinc-500 text-sm">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link
                 href="/signup"
                 className="text-violet-400 hover:text-violet-300 font-medium hover:underline underline-offset-4 transition-colors"

@@ -118,7 +118,7 @@ export default function Verify() {
                 Verify Identity <Sparkles className="w-4 h-4 text-violet-400" />
               </h1>
               <p className="text-zinc-400 text-sm max-w-xs mx-auto">
-                We've sent a 6-digit code to <br />
+                We&apos;ve sent a 6-digit code to <br />
                 <span className="text-zinc-200 font-medium">{email}</span>
               </p>
             </div>
@@ -179,7 +179,7 @@ export default function Verify() {
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-white/5 text-center">
             <p className="text-zinc-500 text-sm">
-              Didn't receive code?{' '}
+              Didn&apos;t receive code?{' '}
               <button className="text-violet-400 hover:text-violet-300 font-medium hover:underline underline-offset-4 transition-colors">
                 Resend
               </button>

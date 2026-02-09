@@ -177,7 +177,7 @@ export default function Home() {
 
               <div className="mt-6 p-4 rounded-xl bg-zinc-950 border border-white/5">
                 <div className="text-xs text-zinc-500 mb-1 uppercase tracking-wider">Feedback</div>
-                <div className="text-sm text-zinc-200">"Your explanation of Big-O was clear, but try to reduce 'um' pauses."</div>
+                <div className="text-sm text-zinc-200">Your explanation of Big-O was clear, but try to reduce &apos;um&apos; pauses.</div>
               </div>
             </div>
           </div>
@@ -201,7 +201,7 @@ export default function Home() {
               </div>
               <h3 className="text-2xl font-bold mb-2 text-white">Instant Feedback Loop</h3>
               <p className="text-zinc-400 max-w-sm">
-                Don't wait for a rejection email. Get detailed feedback immediately after the session.
+                Don&apos;t wait for a rejection email. Get detailed feedback immediately after the session.
               </p>
             </div>
 
