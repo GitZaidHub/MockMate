@@ -1,47 +1,32 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  Loader2Icon,
-  ShieldCheck,
-  Mail,
-  ArrowRight,
-  Sparkles
-} from "lucide-react";
 
-// UI Components
-import { Button } from "@/components/ui/button";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSeparator,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+export const dynamic = "force-dynamic";
 
-export default function Verify() {
-  const searchParams = useSearchParams();
-  const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
-  const [otp, setOTP] = useState("");
+export default function VerifyPage({ searchParams }) {
   const router = useRouter();
 
-  // 1. Logic: Extract Email or Redirect
+  const [email, setEmail] = useState("");
+  const [otp, setOTP] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
-    const emailParam = searchParams.get('email');
+    const emailParam = searchParams?.email;
+
     if (emailParam) {
       setEmail(emailParam);
     } else {
-      toast.error('Email not found, go back to signup page');
-      router.push('/signup');
+      toast.error("Email not found, go back to signup page");
+      router.push("/signup");
     }
   }, [searchParams, router]);
 
-  // 2. Logic: Verify OTP API Call
   const verifyOTP = async (e) => {
     e.preventDefault();
+
     if (!otp) {
       toast.error("Please enter OTP");
       return;
@@ -52,34 +37,21 @@ export default function Verify() {
 
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
-        body: JSON.stringify({ email, otp }),
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp }),
       });
 
-      let data;
-      try {
-        data = await res.json();
-      } catch (parseErr) {
-        // Fallback if server didn't send JSON
-        const text = await res.text();
-        console.error("Non-JSON response:", text);
-        toast.error("Server error. Please try again.");
-        setIsLoading(false);
-        return;
-      }
-
-      console.log("login data", data);
+      const data = await res.json();
 
       if (res.ok && data.success) {
-        localStorage.setItem("token", data.token); //
+        localStorage.setItem("token", data.token);
         toast.success(data.message);
         router.push("/dashboard");
       } else {
         toast.error(data.message || "Verification failed");
       }
-    } catch (error) {
-      console.error(error);
-      toast.error(error.message || "Something went wrong");
+    } catch (err) {
+      toast.error("Something went wrong");
     } finally {
       setIsLoading(false);
     }
