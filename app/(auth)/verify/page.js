@@ -1,32 +1,51 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useEffect, useState, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { toast } from "sonner";
+import {
+  Loader2Icon,
+  ShieldCheck,
+  Mail,
+  ArrowRight,
+  Sparkles
+} from "lucide-react";
 
-export const dynamic = "force-dynamic";
+// UI Components
+import { Button } from "@/components/ui/button";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
-export default function VerifyPage({ searchParams }) {
-  const router = useRouter();
-
+function VerifyContent() {
+  const searchParams = useSearchParams();
+  const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [otp, setOTP] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
+  // 1. Logic: Extract Email or Redirect
   useEffect(() => {
-    const emailParam = searchParams?.email;
-
+    const emailParam = searchParams.get('email');
     if (emailParam) {
       setEmail(emailParam);
     } else {
-      toast.error("Email not found, go back to signup page");
-      router.push("/signup");
+      // Small delay to allow toast to show if redirected immediately (though rare in effect)
+      // verify logic usually expects email
+      // If we want to allow manual entry, we might remove this.
+      // But adhering to original logic:
+      toast.error('Email not found, go back to signup page');
+      router.push('/signup');
     }
   }, [searchParams, router]);
 
+  // 2. Logic: Verify OTP API Call
   const verifyOTP = async (e) => {
     e.preventDefault();
-
     if (!otp) {
       toast.error("Please enter OTP");
       return;
@@ -37,21 +56,34 @@ export default function VerifyPage({ searchParams }) {
 
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otp }),
+        headers: { "Content-Type": "application/json" },
       });
 
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        // Fallback if server didn't send JSON
+        const text = await res.text();
+        console.error("Non-JSON response:", text);
+        toast.error("Server error. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+
+      console.log("login data", data);
 
       if (res.ok && data.success) {
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("token", data.token); //
         toast.success(data.message);
         router.push("/dashboard");
       } else {
         toast.error(data.message || "Verification failed");
       }
-    } catch (err) {
-      toast.error("Something went wrong");
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Something went wrong");
     } finally {
       setIsLoading(false);
     }
@@ -161,5 +193,17 @@ export default function VerifyPage({ searchParams }) {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Verify() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen w-full bg-zinc-950 flex items-center justify-center text-white">
+        <Loader2Icon className="h-8 w-8 animate-spin text-violet-500" />
+      </div>
+    }>
+      <VerifyContent />
+    </Suspense>
   );
 }
