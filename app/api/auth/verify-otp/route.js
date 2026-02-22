@@ -19,9 +19,9 @@ export async function POST(req) {
     console.log("user", user);
 
     // Make sure this matches your schema: otpExpired vs otpExpires
-    console.log("details ->", otp, user?.otp, user?.otpExpired);
+    console.log("details ->", otp, user?.otp, user?.otpExpires);
 
-    if (!user || user.otp !== otp || user.otpExpired < new Date()) {
+    if (!user || user.otp !== otp || user.otpExpires < new Date()) {
       return Response.json(
         { success: false, message: "Invalid or expired OTP" },
         { status: 400 }
@@ -44,7 +44,7 @@ export async function POST(req) {
 
     user.isVerified = true;
     user.otp = undefined;
-    user.otpExpired = undefined;
+    user.otpExpires = undefined;
     await user.save();
 
     return Response.json(
