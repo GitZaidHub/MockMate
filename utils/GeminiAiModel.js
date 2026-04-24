@@ -9,7 +9,7 @@ const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_
 const genAI = new GoogleGenerativeAI(apiKey);
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash", // Changed to 1.5-flash (Standard stable version)
+  model: "gemini-3-flash-preview", // Changed to 1.5-flash (Standard stable version)
 });
 
 /* --- CHAT SESSION (For Interview) --- */
@@ -29,7 +29,7 @@ export const chatSession = model.startChat({
 export const analyzeResumeWithAI = async (resumeText) => {
   // 1. Configure model specifically for JSON response
   const jsonModel = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-3-flash-preview",
     generationConfig: {
       responseMimeType: "application/json" // Enforces strict JSON
     }

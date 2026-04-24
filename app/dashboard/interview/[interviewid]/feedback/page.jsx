@@ -1,6 +1,5 @@
 "use client"
-
-import React, { useEffect, useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 import {
     Collapsible,
     CollapsibleContent,
@@ -25,19 +24,20 @@ import {
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 
-
 const Feedback = ({ params }) => {
     const [feedbacks, setFeedbacks] = useState([])
     const [overallRating, setOverallRating] = useState(0)
+    const resolvedParam = use(params);
+    const interviewid = resolvedParam.interviewid
     const router = useRouter();
 
     useEffect(() => {
         getFeedback();
-    }, [])
+    }, [interviewid])
 
     const getFeedback = async () => {
         try {
-            const resp = await fetch(`/api/useranswer?mockInterviewIdRef=${params.interviewid}`);
+            const resp = await fetch(`/api/useranswer?mockInterviewIdRef=${interviewid}`);
             const result = await resp.json();
 
             if (result.success) {

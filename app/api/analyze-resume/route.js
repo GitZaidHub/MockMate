@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import pdf from "pdf-parse";
-import { analyzeResumeWithAI } from "@/utils/GeminiAiModel"; // Import the logic
+import { analyzeResumeWithAI } from "@/utils/GeminiAiModel";
+import PDFParser from "pdf2json";
 
 export async function POST(req) {
     try {
@@ -11,27 +11,47 @@ export async function POST(req) {
             return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
         }
 
-        // 1. Parse PDF
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const pdfData = await pdf(buffer);
-        const resumeText = pdfData.text;
-
-        if (!resumeText || resumeText.length < 50) {
-            console.warn("PDF Extraction Warning: Very little text found.", resumeText);
-            // Proceed anyway, let AI decide if it's readable, but log it.
+        // BUG FIX #5: Validate that the uploaded file is actually a PDF.
+        // Without this, non-PDF files crash the parser with a cryptic error.
+        if (file.type !== "application/pdf") {
+            return NextResponse.json(
+                { error: "Invalid file type. Please upload a PDF file." },
+                { status: 400 }
+            );
         }
 
-        // 2. Get AI Analysis (Logic extracted to utility)
+        // 1. Convert file to buffer
+        const buffer = Buffer.from(await file.arrayBuffer());
+
+        // 2. Parse PDF using pdf2json - highly reliable in Next.js App Router
+        let resumeText = "";
+        try {
+            resumeText = await new Promise((resolve, reject) => {
+                const pdfParser = new PDFParser(null, 1);
+                pdfParser.on("pdfParser_dataError", (errData) => reject(errData.parserError));
+                pdfParser.on("pdfParser_dataReady", () => resolve(pdfParser.getRawTextContent()));
+                pdfParser.parseBuffer(buffer);
+            });
+        } catch (parseError) {
+            console.error("PDF Parse Error:", parseError);
+            resumeText = "";
+        }
+
+        if (!resumeText || resumeText.trim().length < 50) {
+            console.warn("PDF Extraction Warning: Very little text found. Possibly a scanned/image PDF.");
+        }
+
+        // 3. Get AI Analysis
         const analysisResult = await analyzeResumeWithAI(resumeText);
 
-        // 3. Return JSON
+        // 4. Return JSON
         return NextResponse.json(analysisResult);
 
     } catch (error) {
         console.error("Analysis Error:", error);
         return NextResponse.json({
             error: "Analysis Failed",
-            details: error.message || String(error)
+            details: error.message || String(error),
         }, { status: 500 });
     }
 }

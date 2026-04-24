@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 
 export async function POST(req) {
   try {
-    const { email,password } = await req.json();
+    const { email, password } = await req.json();
     await connectDB();
 
     let user = await User.findOne({ email });
@@ -24,10 +24,11 @@ export async function POST(req) {
 
     const otp = generateOTP();
     const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
-    const hashedPassword = await bcrypt.hash(password,10); // Hashing the password
+    const hashedPassword = await bcrypt.hash(password, 10); // Hashing the password
     const newUser = await User.create({
+
       email,
-      password:hashedPassword,
+      password: hashedPassword,
       otp,
       otpExpires,
     });

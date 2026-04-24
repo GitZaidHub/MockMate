@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ResumeDropzone from '../_components/Resume_dropd';
 import { Loader2, CheckCircle2, AlertTriangle, XCircle, FileText, ArrowRight, RotateCcw, BrainCircuit } from 'lucide-react';
 import { toast } from 'sonner';
@@ -7,6 +7,17 @@ import { toast } from 'sonner';
 export default function ResumePage() {
     const [analysis, setAnalysis] = useState(null);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        const savedAnalysis = localStorage.getItem("lastResumeAnalysis");
+        if (savedAnalysis) {
+            try {
+                setAnalysis(JSON.parse(savedAnalysis));
+            } catch (e) {
+                console.error("Failed to parse saved resume analysis:", e);
+            }
+        }
+    }, []);
 
     const handleFileUpload = async (file) => {
         setLoading(true);
@@ -20,15 +31,22 @@ export default function ResumePage() {
             });
             const data = await res.json();
 
-            if (data.error) throw new Error(data.details);
+            if (!res.ok || data.error) throw new Error(data.details || data.error || "Analysis failed. Please try a clearer PDF.");
+            
             setAnalysis(data);
+            localStorage.setItem("lastResumeAnalysis", JSON.stringify(data));
 
         } catch (error) {
             console.error(error);
-            toast.error("Analysis failed. Please try a clearer PDF.");
+            toast.error(error.message || "Analysis failed. Please try a clearer PDF.");
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleReset = () => {
+        setAnalysis(null);
+        localStorage.removeItem("lastResumeAnalysis");
     };
 
     return (
@@ -78,7 +96,7 @@ export default function ResumePage() {
                         <ResumeDropzone onFileUpload={handleFileUpload} />
                     ) : (
                         // 3. RESULT DASHBOARD
-                        <ResumeAnalysisDashboard data={analysis} reset={() => setAnalysis(null)} />
+                        <ResumeAnalysisDashboard data={analysis} reset={handleReset} />
                     )}
                 </div>
             </div>
@@ -96,7 +114,13 @@ function ResumeAnalysisDashboard({ data, reset }) {
         return { color: "text-red-400", border: "border-red-500/50", bg: "bg-red-500/10", label: "Needs Work" };
     };
 
-    const scoreInfo = getScoreInfo(data.ats_score);
+    const scoreInfo = getScoreInfo(data.ats_score ?? 0);
+
+    // BUG FIX #6: Safely default all array fields to [] to prevent crashes when
+    // the AI omits a field or returns null. Without this, .map() throws a TypeError.
+    const missingKeywords = data.missing_keywords ?? [];
+    const keySkillsFound = data.key_skills_found ?? [];
+    const weaknesses = data.weaknesses ?? [];
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
@@ -110,7 +134,7 @@ function ResumeAnalysisDashboard({ data, reset }) {
 
                     <div className={`relative w-40 h-40 flex items-center justify-center rounded-full border-8 ${scoreInfo.bg} ${scoreInfo.border} mb-6 shadow-[0_0_30px_-10px_rgba(0,0,0,0.5)]`}>
                         <div className="flex flex-col items-center">
-                            <span className={`text-5xl font-bold ${scoreInfo.color}`}>{data.ats_score}</span>
+                            <span className={`text-5xl font-bold ${scoreInfo.color}`}>{data.ats_score ?? 0}</span>
                             <span className="text-xs text-zinc-500 font-mono mt-1">/100</span>
                         </div>
                     </div>
@@ -131,7 +155,7 @@ function ResumeAnalysisDashboard({ data, reset }) {
                             <h3 className="text-xl font-bold text-white">Professional Summary</h3>
                         </div>
                         <p className="text-zinc-400 leading-relaxed text-sm md:text-base">
-                            "{data.summary}"
+                            "{data.summary ?? "No summary available."}"
                         </p>
                     </div>
 
@@ -142,6 +166,15 @@ function ResumeAnalysisDashboard({ data, reset }) {
                                 {data.job_title || "General Software Engineer"}
                             </span>
                         </div>
+                        {/* Also show the verdict if available */}
+                        {data.verdict && (
+                            <div className="text-sm">
+                                <span className="text-zinc-500 block mb-1">Verdict</span>
+                                <span className="text-zinc-200 font-medium bg-zinc-800/50 px-3 py-1 rounded-lg border border-white/5">
+                                    {data.verdict}
+                                </span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -156,8 +189,8 @@ function ResumeAnalysisDashboard({ data, reset }) {
                         <h3 className="text-lg font-bold text-red-100">Missing Critical Keywords</h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                        {data.missing_keywords?.length > 0 ? (
-                            data.missing_keywords.map((kw, i) => (
+                        {missingKeywords.length > 0 ? (
+                            missingKeywords.map((kw, i) => (
                                 <span key={i} className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-300 text-sm border border-red-500/20">
                                     {kw}
                                 </span>
@@ -177,11 +210,15 @@ function ResumeAnalysisDashboard({ data, reset }) {
                         <h3 className="text-lg font-bold text-green-100">Skills Detected</h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                        {data.key_skills_found?.map((skill, i) => (
-                            <span key={i} className="px-3 py-1.5 rounded-lg bg-green-500/10 text-green-300 text-sm border border-green-500/20">
-                                {skill}
-                            </span>
-                        ))}
+                        {keySkillsFound.length > 0 ? (
+                            keySkillsFound.map((skill, i) => (
+                                <span key={i} className="px-3 py-1.5 rounded-lg bg-green-500/10 text-green-300 text-sm border border-green-500/20">
+                                    {skill}
+                                </span>
+                            ))
+                        ) : (
+                            <p className="text-zinc-500 text-sm">No skills detected.</p>
+                        )}
                     </div>
                 </div>
             </div>
@@ -189,30 +226,36 @@ function ResumeAnalysisDashboard({ data, reset }) {
             {/* Bottom Row: Detailed Fixes */}
             <div className="bg-zinc-900/40 border border-white/5 p-8 rounded-3xl">
                 <h3 className="text-xl font-bold text-white mb-6">Actionable Improvements</h3>
-                <div className="grid gap-4">
-                    {data.weaknesses?.map((item, i) => (
-                        <div key={i} className="group p-5 bg-zinc-950/50 border border-white/5 rounded-2xl hover:border-violet-500/20 transition-all">
-                            <div className="flex items-start gap-4">
-                                <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center text-xs font-bold mt-0.5">
-                                    {i + 1}
-                                </span>
-                                <div className="space-y-2">
-                                    <p className="text-zinc-300 font-medium text-sm">
-                                        <span className="text-red-400 mr-2">Issue:</span>
-                                        {item.point}
-                                    </p>
-                                    <div className="flex gap-2 items-start text-sm">
-                                        <ArrowRight size={16} className="text-green-500 mt-1 shrink-0" />
-                                        <p className="text-zinc-400 italic">
-                                            <span className="text-green-400 not-italic font-medium mr-1">Fix:</span>
-                                            {item.fix}
+                {weaknesses.length > 0 ? (
+                    <div className="grid gap-4">
+                        {weaknesses.map((item, i) => (
+                            <div key={i} className="group p-5 bg-zinc-950/50 border border-white/5 rounded-2xl hover:border-violet-500/20 transition-all">
+                                <div className="flex items-start gap-4">
+                                    <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center text-xs font-bold mt-0.5">
+                                        {i + 1}
+                                    </span>
+                                    <div className="space-y-2">
+                                        <p className="text-zinc-300 font-medium text-sm">
+                                            <span className="text-red-400 mr-2">Issue:</span>
+                                            {item.point}
                                         </p>
+                                        <div className="flex gap-2 items-start text-sm">
+                                            <ArrowRight size={16} className="text-green-500 mt-1 shrink-0" />
+                                            <p className="text-zinc-400 italic">
+                                                <span className="text-green-400 not-italic font-medium mr-1">Fix:</span>
+                                                {item.fix}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-green-400 text-sm flex items-center gap-2">
+                        <CheckCircle2 size={16} /> No major issues found. Great resume!
+                    </p>
+                )}
             </div>
 
             {/* Action Buttons */}
